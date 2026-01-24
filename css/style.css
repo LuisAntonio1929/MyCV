@@ -938,3 +938,88 @@ section:nth-of-type(9){ animation-delay: 540ms; }
   section{ animation: none; opacity: 1; }
   *{ transition: none !important; }
 }
+
+/* ===== Achievements: horizontal friendly slider ===== */
+.achievements-wrap{
+  position: relative;
+  margin-top: 18px;
+}
+
+.achievements-track{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(320px, 420px);
+  gap: 18px;
+
+  overflow-x: auto;
+  padding: 8px 46px;           /* espacio para los botones */
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.achievements-track::-webkit-scrollbar{
+  height: 10px;
+}
+.achievements-track::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.15);
+  border-radius: 999px;
+}
+body.dark-theme .achievements-track::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,0.18);
+}
+
+.achievement-item{
+  scroll-snap-align: start;
+  border-bottom: none;       /* quita la línea de la lista */
+  margin-bottom: 0;
+  padding: 18px;
+  border-radius: var(--border-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  border: var(--border);
+}
+
+/* Quita el estilo de “lista larga” */
+#achievements{
+  padding: 30px;
+}
+
+/* Botones (opcionales pero recomendados) */
+.achievements-nav{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.achievements-nav:hover{
+  transform: translateY(-50%) scale(1.04);
+  background: rgba(52,152,219,0.10);
+}
+
+.achievements-nav.prev{ left: 8px; }
+.achievements-nav.next{ right: 8px; }
+
+/* En pantallas pequeñas: botones más discretos */
+@media (max-width: 768px){
+  .achievements-track{
+    grid-auto-columns: minmax(280px, 85vw);
+    padding: 8px 16px; /* sin espacio extra para botones */
+  }
+  .achievements-nav{ display: none; } /* swipe en móvil */
+}
+
