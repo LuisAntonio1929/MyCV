@@ -46,7 +46,7 @@
   function renderSkills() {
     // Support either an id or a class container
     const container = qs("#skills-container") || qs(".skills-container");
-    if (!container) return; // page section might not exist
+    if (!container) return;
 
     // Avoid duplicating skills if script runs twice
     const alreadyHasSkills = container.querySelector(".skill");
@@ -66,14 +66,13 @@
   // Theme toggle button (no inline styles)
   // ----------------------------
   function ensureThemeToggle() {
-    // If you already have a button in HTML, reuse it
     let btn = qs("#themeToggle");
 
     if (!btn) {
       btn = document.createElement("button");
       btn.id = "themeToggle";
       btn.type = "button";
-      btn.className = "theme-toggle"; // define styling in CSS
+      btn.className = "theme-toggle";
       btn.setAttribute("aria-label", "Toggle theme");
       btn.setAttribute("aria-pressed", "false");
       document.body.appendChild(btn);
@@ -84,7 +83,6 @@
       setTheme(isDark ? "light" : "dark");
     });
 
-    // Apply initial theme and label
     setTheme(loadTheme());
   }
 
@@ -97,7 +95,6 @@
 
     const submitBtn = form.querySelector(".submit-btn");
     const statusNode = (() => {
-      // Reuse existing status node if present
       let node = qs("#formStatus");
       if (!node) {
         node = document.createElement("div");
@@ -105,7 +102,7 @@
         node.className = "form-confirmation";
         node.setAttribute("role", "status");
         node.setAttribute("aria-live", "polite");
-        node.style.display = "none"; // CSS can override if you prefer
+        node.style.display = "none";
         form.insertAdjacentElement("afterend", node);
       }
       return node;
@@ -113,14 +110,12 @@
 
     async function handleSubmit(e) {
       e.preventDefault();
-
       if (!submitBtn) return;
 
       const originalHTML = submitBtn.innerHTML;
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
-      // Hide previous status
       statusNode.style.display = "none";
       statusNode.classList.remove("success", "error");
 
@@ -128,26 +123,25 @@
         const response = await fetch(form.action, {
           method: "POST",
           body: new FormData(form),
-          headers: { "Accept": "application/json" } // helps some services respond cleanly
+          headers: { "Accept": "application/json" }
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         form.reset();
         statusNode.classList.add("success");
-        statusNode.innerHTML = '<i class="fas fa-check-circle"></i> Message sent successfully. I will reply soon.';
+        statusNode.innerHTML =
+          '<i class="fas fa-check-circle"></i> Message sent successfully. I will reply soon.';
         statusNode.style.display = "block";
 
-        // auto-hide
         window.setTimeout(() => {
           statusNode.style.display = "none";
         }, 5000);
       } catch (err) {
         console.error("Form error:", err);
         statusNode.classList.add("error");
-        statusNode.innerHTML = '<i class="fas fa-exclamation-circle"></i> Something went wrong. Please try again.';
+        statusNode.innerHTML =
+          '<i class="fas fa-exclamation-circle"></i> Something went wrong. Please try again.';
         statusNode.style.display = "block";
       } finally {
         submitBtn.innerHTML = originalHTML;
@@ -159,11 +153,62 @@
   }
 
   // ----------------------------
+  // Achievements horizontal slider (prev/next + friendly behavior)
+  // Requires:
+  //  - track: #achievementsTrack
+  //  - buttons: .achievements-nav.prev / .achievements-nav.next
+  // ----------------------------
+  function setupAchievementsSlider() {
+    const track = qs("#achievementsTrack");
+    if (!track) return;
+
+    const prevBtn = qs(".achievements-nav.prev");
+    const nextBtn = qs(".achievements-nav.next");
+
+    function getScrollStep() {
+      const card = track.querySelector(".achievement-item");
+      if (!card) return 320;
+      const gap = 18; // keep in sync with CSS gap
+      return card.getBoundingClientRect().width + gap;
+    }
+
+    function updateNavVisibility() {
+      // Allow a small epsilon for floating point differences
+      const epsilon = 2;
+      const maxScrollLeft = track.scrollWidth - track.clientWidth;
+
+      const atStart = track.scrollLeft <= epsilon;
+      const atEnd = track.scrollLeft >= (maxScrollLeft - epsilon);
+
+      if (prevBtn) prevBtn.style.visibility = atStart ? "hidden" : "visible";
+      if (nextBtn) nextBtn.style.visibility = atEnd ? "hidden" : "visible";
+    }
+
+    function scrollByCard(direction) {
+      track.scrollBy({ left: direction * getScrollStep(), behavior: "smooth" });
+    }
+
+    prevBtn?.addEventListener("click", () => scrollByCard(-1));
+    nextBtn?.addEventListener("click", () => scrollByCard(1));
+
+    // Update visibility on scroll/resize
+    track.addEventListener("scroll", () => {
+      window.requestAnimationFrame(updateNavVisibility);
+    });
+    window.addEventListener("resize", updateNavVisibility);
+
+    // Init state
+    updateNavVisibility();
+  }
+
+  // ----------------------------
   // Init
   // ----------------------------
   document.addEventListener("DOMContentLoaded", () => {
     renderSkills();
     ensureThemeToggle();
     setupContactForm();
+    setupAchievementsSlider(); // ✅ added
   });
 })();
+
