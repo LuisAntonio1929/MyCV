@@ -173,7 +173,6 @@
     }
 
     function updateNavVisibility() {
-      // Allow a small epsilon for floating point differences
       const epsilon = 2;
       const maxScrollLeft = track.scrollWidth - track.clientWidth;
 
@@ -191,13 +190,68 @@
     prevBtn?.addEventListener("click", () => scrollByCard(-1));
     nextBtn?.addEventListener("click", () => scrollByCard(1));
 
-    // Update visibility on scroll/resize
     track.addEventListener("scroll", () => {
       window.requestAnimationFrame(updateNavVisibility);
     });
     window.addEventListener("resize", updateNavVisibility);
 
-    // Init state
+    updateNavVisibility();
+  }
+
+  // ----------------------------
+  // Experience vertical slider (up/down + snap-friendly behavior)
+  // Requires:
+  //  - track: #experienceTrack
+  //  - buttons: .experience-nav.up / .experience-nav.down
+  // ----------------------------
+  function setupExperienceSlider() {
+    const track = qs("#experienceTrack");
+    if (!track) return;
+
+    const upBtn = qs(".experience-nav.up");
+    const downBtn = qs(".experience-nav.down");
+
+    function getScrollStep() {
+      const card = track.querySelector(".experience-item");
+      if (!card) return 260;
+      const gap = 18; // keep in sync with CSS gap
+      return card.getBoundingClientRect().height + gap;
+    }
+
+    function updateNavVisibility() {
+      const epsilon = 2;
+      const maxScrollTop = track.scrollHeight - track.clientHeight;
+
+      const atTop = track.scrollTop <= epsilon;
+      const atBottom = track.scrollTop >= (maxScrollTop - epsilon);
+
+      if (upBtn) upBtn.style.visibility = atTop ? "hidden" : "visible";
+      if (downBtn) downBtn.style.visibility = atBottom ? "hidden" : "visible";
+    }
+
+    function scrollByCard(direction) {
+      track.scrollBy({ top: direction * getScrollStep(), behavior: "smooth" });
+    }
+
+    upBtn?.addEventListener("click", () => scrollByCard(-1));
+    downBtn?.addEventListener("click", () => scrollByCard(1));
+
+    // Keyboard support when focused (tabindex="0" on the track)
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        scrollByCard(-1);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        scrollByCard(1);
+      }
+    });
+
+    track.addEventListener("scroll", () => {
+      window.requestAnimationFrame(updateNavVisibility);
+    });
+    window.addEventListener("resize", updateNavVisibility);
+
     updateNavVisibility();
   }
 
@@ -208,7 +262,9 @@
     renderSkills();
     ensureThemeToggle();
     setupContactForm();
-    setupAchievementsSlider(); // ✅ added
+    setupAchievementsSlider();
+    setupExperienceSlider(); // ✅ added
   });
 })();
+
 
