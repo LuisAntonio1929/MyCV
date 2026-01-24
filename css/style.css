@@ -49,7 +49,8 @@ body{
   color: var(--text-color);
   padding: 22px;
 
-  /* Subtle engineering background */
+  position: relative;       /* <- clave */
+  isolation: isolate;        /* <- clave */
   background:
     radial-gradient(1100px 600px at 10% -10%, rgba(47,135,215,0.08), transparent 40%),
     radial-gradient(900px 520px at 90% 10%, rgba(226,74,59,0.06), transparent 45%),
@@ -57,17 +58,16 @@ body{
     var(--bg-color);
 }
 
-/* optional ultra-light grid */
 body::before{
   content:"";
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(15,23,42,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15,23,42,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(15,23,42,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.035) 1px, transparent 1px);
   background-size: 56px 56px;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;               /* <- antes estaba -1 */
 }
 
 /* Links & focus */
@@ -77,6 +77,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   outline:none;
   box-shadow: var(--focus);
   border-radius: 10px;
+}
+
+.container,
+.theme-toggle{
+  position: relative;
+  z-index: 1;
 }
 
 p{ margin-top: 10px; }
@@ -973,3 +979,4 @@ body.dark-theme .experience-track::-webkit-scrollbar-thumb{ background: rgba(255
   .achievements-track{ grid-auto-columns: minmax(280px, 85vw); padding: 8px 16px; }
   .achievements-nav{ display: none; }
 }
+
